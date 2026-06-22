@@ -59,7 +59,7 @@ fi
 
 # build expanded database using msi ********************************************
 if [ -f ${RUNTIME_DIR}/ioc.subst ]; then
-    includes=$(for i in ${SUPPORT}/*/db; do echo -n "-I $i "; done)
+    includes=$(for i in ${SUPPORT}/*/db /epics/ioc/config; do echo -n "-I $i "; done)
     bash -c "msi -o${RUNTIME_DIR}/ioc.db ${includes} -I${RUNTIME_DIR} -S${RUNTIME_DIR}/ioc.subst"
 fi
 
@@ -69,6 +69,12 @@ if [[ -d /epics/support/configure/protocol ]] ; then
     rm -fr ${RUNTIME_DIR}/protocol
     cp -r /epics/support/configure/protocol  ${RUNTIME_DIR}
 fi
+
+##### CUSTOM STEP FOR ioc-streamdevice #########################################
+# additional copy for runtime protocol files
+mkdir -p ${RUNTIME_DIR}/protocol
+cp ${CONFIG_DIR}/*.proto* ${RUNTIME_DIR}/protocol | true
+################################################################################
 
 # check hardware communication pre-requisites **********************************
 # set IBEK_DO_WAIT_DISABLE=true to skip this step (e.g. to force IOC startup
