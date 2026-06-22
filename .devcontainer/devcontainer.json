@@ -63,7 +63,8 @@
     "postCreateCommand": "bash .devcontainer/postCreateCommand ${devcontainerId}",
     "runArgs": [
         // Make sure SELinux does not disable write access to host filesystems like tmp
-        "--security-opt=label=disable"
+        "--security-opt=label=disable",
+        "--device=/dev/net/tun"
     ],
     // Mount the parent of the project folder so we can access peer projects
     "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspaces,type=bind",

@@ -29,11 +29,20 @@ ENV PATH=$PATH:${SOURCE_FOLDER}/ibek-support/_ansible
 COPY ibek-support/iocStats/ iocStats
 RUN ansible.sh iocStats
 
+COPY ibek-support/calc/ calc
+RUN ansible.sh calc
+
+COPY ibek-support/asyn/ asyn/
+RUN ansible.sh asyn
+
 COPY ibek-support/pvlogging/ pvlogging/
 RUN ansible.sh pvlogging
 
 COPY ibek-support/autosave/ autosave
 RUN ansible.sh autosave
+
+COPY ibek-support/StreamDevice/ StreamDevice
+RUN ansible.sh StreamDevice
 
 # get the ioc source and build it
 COPY ioc ${SOURCE_FOLDER}/ioc
