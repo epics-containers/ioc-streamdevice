@@ -58,8 +58,10 @@ if [[ -f ${CONFIG_DIR}/ioc.yaml ]] ; then
 fi
 
 # build expanded database using msi ********************************************
+# the instance config folder is on the include path so that runtime-support
+# patterns can supply their own .template / .db files alongside ioc.yaml.
 if [ -f ${RUNTIME_DIR}/ioc.subst ]; then
-    includes=$(for i in ${SUPPORT}/*/db /epics/ioc/config; do echo -n "-I $i "; done)
+    includes=$(for i in ${SUPPORT}/*/db ${CONFIG_DIR}; do echo -n "-I $i "; done)
     bash -c "msi -o${RUNTIME_DIR}/ioc.db ${includes} -I${RUNTIME_DIR} -S${RUNTIME_DIR}/ioc.subst"
 fi
 
@@ -70,11 +72,14 @@ if [[ -d /epics/support/configure/protocol ]] ; then
     cp -r /epics/support/configure/protocol  ${RUNTIME_DIR}
 fi
 
-##### CUSTOM STEP FOR ioc-streamdevice #########################################
-# additional copy for runtime protocol files
-mkdir -p ${RUNTIME_DIR}/protocol
-cp ${CONFIG_DIR}/*.proto* ${RUNTIME_DIR}/protocol | true
-################################################################################
+# place runtime artifacts declared in the instance config folder **************
+# proto/db files vendored or dropped into config/ (e.g. by `ibek pattern add`)
+# are copied into their runtime search-path locations. Runs after the support
+# protocol copy above so instance files are added alongside, not wiped. This
+# replaces the per-image start.sh fork (epics-containers/ioc-streamdevice#1).
+if [[ -f ${CONFIG_DIR}/ioc.yaml ]] ; then
+    ibek runtime place-files ${CONFIG_DIR}
+fi
 
 # check hardware communication pre-requisites **********************************
 # set IBEK_DO_WAIT_DISABLE=true to skip this step (e.g. to force IOC startup
