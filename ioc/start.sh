@@ -61,7 +61,7 @@ fi
 # the instance config folder is on the include path so that runtime-support
 # patterns can supply their own .template / .db files alongside ioc.yaml.
 if [ -f ${RUNTIME_DIR}/ioc.subst ]; then
-    includes=$(for i in ${SUPPORT}/*/db ${CONFIG_DIR}; do echo -n "-I $i "; done)
+    includes=$(for i in ${CONFIG_DIR} /epics/ioc/config ${SUPPORT}/*/db; do echo -n "-I $i "; done)
     bash -c "msi -o${RUNTIME_DIR}/ioc.db ${includes} -I${RUNTIME_DIR} -S${RUNTIME_DIR}/ioc.subst"
 fi
 
