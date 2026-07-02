@@ -118,6 +118,8 @@ jobs:
     needs: [build]
     if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     # this job runs in the native developer container we just made
     container:
