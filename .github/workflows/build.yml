@@ -143,4 +143,5 @@ jobs:
         with:
           files: |
             ibek.ioc.schema.json
+            versions.json
           generate_release_notes: true
