@@ -57,6 +57,7 @@ jobs:
           target: runtime
           build-args: |
             IMAGE_EXT=${{ matrix.extension }}
+            IOC_VERSION=${{ github.ref_name }}
           cache-from: type=gha,scope=${{ matrix.epics-target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.epics-target }}
           tags: ci_test
@@ -85,6 +86,7 @@ jobs:
           target: developer
           build-args: |
             IMAGE_EXT=${{ matrix.extension }}
+            IOC_VERSION=${{ github.ref_name }}
           tags: ${{ steps.meta-developer.outputs.tags }}
           labels: ${{ steps.meta-developer.outputs.labels }}
           push: true
@@ -129,6 +131,10 @@ jobs:
       - name: generate-schema
         run: |
           ibek ioc generate-schema --output ibek.ioc.schema.json
+
+      - name: copy versions manifest
+        run: |
+          cp /epics/versions.json versions.json
 
       - name: Github Release
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
