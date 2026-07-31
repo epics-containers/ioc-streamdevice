@@ -29,14 +29,26 @@ WORKDIR ${SOURCE_FOLDER}/ibek-support
 COPY ibek-support/_ansible _ansible
 ENV PATH=$PATH:${SOURCE_FOLDER}/ibek-support/_ansible
 
+# VisualDCT: build stage only tool that flattens VDCT .vdb files into
+# .template files, so modules with vdbs build from pristine upstream sources.
+# Nothing is registered for the runtime stage - see ibek-support/vdct/README.md
+COPY ibek-support/vdct/ vdct
+RUN ansible.sh vdct --tags system,pre_build_tasks
+
 COPY ibek-support/iocStats/ iocStats
 RUN ansible.sh iocStats
+
+COPY ibek-support/sscan/ sscan
+RUN ansible.sh sscan
 
 COPY ibek-support/calc/ calc
 RUN ansible.sh calc
 
 COPY ibek-support/asyn/ asyn/
 RUN ansible.sh asyn
+
+COPY ibek-support/busy/ busy
+RUN ansible.sh busy
 
 COPY ibek-support/pvlogging/ pvlogging/
 RUN ansible.sh pvlogging
