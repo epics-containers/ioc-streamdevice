@@ -44,6 +44,9 @@ RUN ansible.sh sscan
 COPY ibek-support/calc/ calc
 RUN ansible.sh calc
 
+COPY ibek-support/std/ std
+RUN ansible.sh std
+
 COPY ibek-support/asyn/ asyn/
 RUN ansible.sh asyn
 
