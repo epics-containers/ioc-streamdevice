@@ -44,14 +44,17 @@ RUN ansible.sh sscan
 COPY ibek-support/calc/ calc
 RUN ansible.sh calc
 
-COPY ibek-support/std/ std
-RUN ansible.sh std
-
 COPY ibek-support/asyn/ asyn/
 RUN ansible.sh asyn
 
 COPY ibek-support/busy/ busy
 RUN ansible.sh busy
+
+# std must follow asyn: stdInclude.dbd includes asyn.dbd, so dbdExpand.pl
+# cannot create std.dbd until asyn is installed. This matches the module
+# order of the core group in ibek-support/build-groups.yml.
+COPY ibek-support/std/ std
+RUN ansible.sh std
 
 COPY ibek-support/pvlogging/ pvlogging/
 RUN ansible.sh pvlogging
