@@ -47,11 +47,21 @@ RUN ansible.sh calc
 COPY ibek-support/asyn/ asyn/
 RUN ansible.sh asyn
 
-COPY ibek-support/std/ std
-RUN ansible.sh std
-
 COPY ibek-support/busy/ busy
 RUN ansible.sh busy
+
+# sequencer is required by std, which has SNL sources (femto.st, delayDo.st)
+# needing snc, and links against seq and pv. No IOC uses the sequencer
+# directly, but std cannot be built without it.
+COPY ibek-support/sequencer/ sequencer
+RUN ansible.sh sequencer
+
+# std must follow asyn and sequencer: stdInclude.dbd includes asyn.dbd so
+# dbdExpand.pl cannot create std.dbd until asyn is installed, and libstd.a
+# needs snc for the .st sources. This matches the module order of the core
+# group in ibek-support/build-groups.yml.
+COPY ibek-support/std/ std
+RUN ansible.sh std
 
 COPY ibek-support/pvlogging/ pvlogging/
 RUN ansible.sh pvlogging
