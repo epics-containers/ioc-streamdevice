@@ -1,18 +1,11 @@
 ARG IMAGE_EXT
 
 ARG REGISTRY=ghcr.io/epics-containers
-ARG RUNTIME=${REGISTRY}/epics-base${IMAGE_EXT}-runtime:7.0.9ec5
-ARG DEVELOPER=${REGISTRY}/epics-base${IMAGE_EXT}-developer:7.0.9ec5
-# for pre-built common support and faster builds of this generic IOC:
-# - change above to￼DEVELOPER=${REGISTRY}/ioc-asyn${IMAGE_EXT}-developer:4.45ec2
-# - comment out uv pip install lines below (unless a newer ibek is needed)
-# - remove ansible.sh lines for all support modules provided by ioc-asyn
+ARG RUNTIME=${REGISTRY}/epics-base${IMAGE_EXT}-runtime:7.0.10ec2
+ARG DEVELOPER=${REGISTRY}/epics-base${IMAGE_EXT}-developer:7.0.10ec2
 
 ##### build stage ##############################################################
 FROM  ${DEVELOPER} AS developer
-
-# initiate ioc image verson variable for manifest
-ARG IOC_VERSION=unknown
 
 # The devcontainer mounts the project root to /epics/generic-source
 # Using the same location here makes devcontainer/runtime differences transparent.
@@ -38,6 +31,12 @@ RUN ansible.sh vdct --tags system,pre_build_tasks
 COPY ibek-support/iocStats/ iocStats
 RUN ansible.sh iocStats
 
+# sequencer is required by std, which has SNL sources (femto.st, delayDo.st)
+# needing snc, and links against seq and pv. No IOC uses the sequencer
+# directly, but std cannot be built without it.
+COPY ibek-support/sequencer/ sequencer
+RUN ansible.sh sequencer
+
 COPY ibek-support/sscan/ sscan
 RUN ansible.sh sscan
 
@@ -50,11 +49,11 @@ RUN ansible.sh asyn
 COPY ibek-support/busy/ busy
 RUN ansible.sh busy
 
-# sequencer is required by std, which has SNL sources (femto.st, delayDo.st)
-# needing snc, and links against seq and pv. No IOC uses the sequencer
-# directly, but std cannot be built without it.
-COPY ibek-support/sequencer/ sequencer
-RUN ansible.sh sequencer
+COPY ibek-support/autosave/ autosave
+RUN ansible.sh autosave
+
+COPY ibek-support/pvlogging/ pvlogging/
+RUN ansible.sh pvlogging
 
 # std must follow asyn and sequencer: stdInclude.dbd includes asyn.dbd so
 # dbdExpand.pl cannot create std.dbd until asyn is installed, and libstd.a
@@ -62,12 +61,6 @@ RUN ansible.sh sequencer
 # group in ibek-support/build-groups.yml.
 COPY ibek-support/std/ std
 RUN ansible.sh std
-
-COPY ibek-support/pvlogging/ pvlogging/
-RUN ansible.sh pvlogging
-
-COPY ibek-support/autosave/ autosave
-RUN ansible.sh autosave
 
 COPY ibek-support/StreamDevice/ StreamDevice
 RUN ansible.sh StreamDevice
@@ -77,6 +70,9 @@ COPY ioc ${SOURCE_FOLDER}/ioc
 RUN ansible.sh ioc
 
 # generate a manifest of installed EPICS modules and python packages
+# IOC_VERSION is declared here, not earlier: every RUN after an ARG sees it,
+# so a new value (each branch or tag) would rebuild all the steps above
+ARG IOC_VERSION=unknown
 COPY scripts/generate_manifest.py /tmp/generate_manifest.py
 RUN python3 /tmp/generate_manifest.py "${IOC_VERSION}"
 
@@ -85,7 +81,8 @@ FROM developer AS runtime_prep
 
 # get the products from the build stage and reduce to runtime assets only
 # /python is created by uv and is needed in the runtime target
-RUN ibek ioc extract-runtime-assets /assets /python
+# /epics/versions.json is the manifest of support module and python versions
+RUN ibek ioc extract-runtime-assets /assets /python /epics/versions.json
 
 ##### runtime stage ############################################################
 FROM ${RUNTIME} AS runtime
