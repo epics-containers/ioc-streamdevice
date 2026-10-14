@@ -64,10 +64,6 @@ jobs:
       - name: Test image
         run: tests/run-tests.sh ci_test
 
-      - name: TEMP verify StreamDevice RegexpConverter and PCRE are built in
-        run: |
-          docker run --rm ci_test bash -c 'set -x; ls /epics/support/StreamDevice/lib/${EPICS_HOST_ARCH}/; f=$(ls /epics/support/StreamDevice/lib/${EPICS_HOST_ARCH}/libstream.so* /epics/ioc/bin/${EPICS_HOST_ARCH}/ioc 2>/dev/null); for x in $f; do echo "== $x"; grep -c -a -E "pcre_compile|RegexpConverter" $x || true; done; ldd /epics/ioc/bin/${EPICS_HOST_ARCH}/ioc | grep -i -E "pcre|stream" || true'
-
       - name: Require released ibek-support on release tags
         # A released image pins ibek-support by commit hash only, so that commit
         # must be reachable from the ibek-support default branch or the image
