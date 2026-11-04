@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 5.0.0
+_commit: 5.0.3
 _src_path: https://github.com/epics-containers/ioc-template
 arm64: true
 description: Generic stream device IOC to support all pure streamdevice protocol files
